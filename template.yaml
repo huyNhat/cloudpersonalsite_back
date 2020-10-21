@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  My 2nd SAM App. This is for the personal site.
+
+Resources:
+  myCloudChallengeTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: personalSite
+        Type: String
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName: myCloudChallengeTable
+
+  UpdateMyVisitorCounterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Events:
+        UpdateCounterApi:
+          Type: Api
+          Properties:
+            Path: /visitCount
+            Method: GET
+      Environment:
+        Variables:
+          dbName: !Ref myCloudChallengeTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref myCloudChallengeTable
+
+Outputs:
+  MyIACCloudResumeProject:
+    Description: All done via AWS SAM CLI
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/visitCount/"
